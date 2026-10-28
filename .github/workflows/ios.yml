@@ -28,6 +28,8 @@ jobs:
           xcodebuild -scheme KSPlayer -destination 'generic/platform=iOS' -configuration Release CODE_SIGNING_ALLOWED=NO build
           device="$(xcrun simctl list devices available --json | python3 -c 'import json,sys; d=json.load(sys.stdin); print(next(v["udid"] for group in d["devices"].values() for v in group if "iPhone" in v["name"]))')"
           xcodebuild -scheme KSPlayer -destination "platform=iOS Simulator,id=$device" CODE_SIGNING_ALLOWED=NO test
+      - name: Verify CocoaPods application integration
+        run: python3 validate_pods.py
       - uses: actions/upload-artifact@v4
         if: always()
         with:
