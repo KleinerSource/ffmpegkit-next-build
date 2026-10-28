@@ -19,6 +19,15 @@ jobs:
         run: python3 build.py
       - name: Test distribution contracts
         run: python3 -m unittest discover -s tests -v
+      - name: Compile and test KSPlayer against the new public modules
+        env:
+          FFMPEGKITNEXT_PACKAGE: ${{ github.workspace }}/dist/pods/FFmpegKitNext
+        run: |
+          git clone --depth=1 --branch codex/ffmpegkit-next-9.0.2 https://github.com/KleinerSource/KSPlayer.git .work/KSPlayer
+          cd .work/KSPlayer
+          xcodebuild -scheme KSPlayer -destination 'generic/platform=iOS' -configuration Release CODE_SIGNING_ALLOWED=NO build
+          device="$(xcrun simctl list devices available --json | python3 -c 'import json,sys; d=json.load(sys.stdin); print(next(v["udid"] for group in d["devices"].values() for v in group if "iPhone" in v["name"]))')"
+          xcodebuild -scheme KSPlayer -destination "platform=iOS Simulator,id=$device" CODE_SIGNING_ALLOWED=NO test
       - uses: actions/upload-artifact@v4
         if: always()
         with:

@@ -13,6 +13,14 @@ ROOT = Path(__file__).resolve().parent
 LOCK = json.loads((ROOT / "sources.lock.json").read_text(encoding="utf-8"))
 MODULES = ("libavcodec", "libavdevice", "libavfilter", "libavformat",
            "libavutil", "libswresample", "libswscale", "ffmpegkit")
+EXCLUDED_HEADERS = {
+    "libavcodec": ("amfdec", "amfenc", "qsv", "vdpau", "dxva2", "d3d11va", "d3d12va",
+                   "vulkan_video", "videotoolbox", "mediacodec"),
+    "libavutil": ("hwcontext_amf", "hwcontext_amf_internal", "hwcontext_vulkan", "hwcontext_vdpau",
+                  "hwcontext_vaapi", "hwcontext_qsv", "hwcontext_opencl", "hwcontext_dxva2",
+                  "hwcontext_d3d11va", "hwcontext_d3d12va", "hwcontext_cuda", "hwcontext_videotoolbox",
+                  "hwcontext_drm", "hwcontext_mediacodec", "hwcontext_ohcodec"),
+}
 
 
 def run(*args, cwd=ROOT):
@@ -66,8 +74,11 @@ def package(upstream):
             if module != "ffmpegkit":
                 modules = framework / "Modules"
                 modules.mkdir(exist_ok=True)
+                excluded = "".join(f'  exclude header "{header}.h"\n'
+                                   for header in EXCLUDED_HEADERS.get(module, ())
+                                   if (framework / "Headers" / f"{header}.h").exists())
                 (modules / "module.modulemap").write_text(
-                    f'framework module {module} [system] {{\n  umbrella "../Headers"\n  export *\n}}\n',
+                    f'framework module {module} [system] {{\n  umbrella "."\n{excluded}  export *\n}}\n',
                     encoding="utf-8")
             version = plistlib.loads((framework / "Info.plist").read_bytes())["CFBundleShortVersionString"]
             if module in versions and versions[module] != version:
