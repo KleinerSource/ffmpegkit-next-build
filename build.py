@@ -130,7 +130,8 @@ def main():
     checkout("FFmpeg", upstream / "src" / "ffmpeg")
     if sys.platform != "darwin":
         raise SystemExit("Apple build requires macOS + Xcode 26 + Nix")
-    run("bash", "nix-ios.sh", "-p", "xcode26", *LOCK["options"], cwd=upstream)
+    if "--package-only" not in sys.argv:
+        run("bash", "nix-ios.sh", "-p", "xcode26", *LOCK["options"], cwd=upstream)
     if subprocess.check_output(["git", "diff", "--name-only"], cwd=upstream, text=True).strip():
         # Official scripts generate/autoreconf files in apple/. Those are not
         # maintained patches; preserve a complete diff for artifact provenance.
