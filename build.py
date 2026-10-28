@@ -4,6 +4,7 @@ import hashlib
 import json
 from pathlib import Path
 import plistlib
+import re
 import shutil
 import subprocess
 import sys
@@ -53,6 +54,22 @@ def validate_framework(path):
     return rows
 
 
+def public_headers(makefile, module):
+    headers = []
+    collecting = False
+    for line in makefile.read_text(encoding="utf-8").splitlines():
+        if re.match(r"^HEADERS\s*=", line):
+            collecting = True
+            line = line.split("=", 1)[1]
+        if collecting:
+            headers.extend(re.findall(r"[A-Za-z0-9_]+\.h", line))
+            if not line.rstrip().endswith("\\"):
+                break
+    excluded = {name + ".h" for name in EXCLUDED_HEADERS.get(module, ())}
+    return [name for name in headers if name not in excluded
+            and not name.startswith("hwcontext_") and name != "jni.h"]
+
+
 def package(upstream):
     candidates = list((upstream / "prebuilt").glob("bundle-apple-xcframework-ios-*"))
     if len(candidates) != 1:
@@ -74,11 +91,12 @@ def package(upstream):
             if module != "ffmpegkit":
                 modules = framework / "Modules"
                 modules.mkdir(exist_ok=True)
-                excluded = "".join(f'  exclude header "{header}.h"\n'
-                                   for header in EXCLUDED_HEADERS.get(module, ())
-                                   if (framework / "Headers" / f"{header}.h").exists())
+                names = public_headers(upstream / "src" / "ffmpeg" / module / "Makefile", module)
+                if not names:
+                    raise ValueError(f"No official public headers for {module}")
+                declarations = "".join(f'  header "{name}"\n' for name in names)
                 (modules / "module.modulemap").write_text(
-                    f'framework module {module} [system] {{\n  umbrella "."\n{excluded}  export *\n}}\n',
+                    f'framework module {module} [system] {{\n{declarations}  export *\n}}\n',
                     encoding="utf-8")
             version = plistlib.loads((framework / "Info.plist").read_bytes())["CFBundleShortVersionString"]
             if module in versions and versions[module] != version:

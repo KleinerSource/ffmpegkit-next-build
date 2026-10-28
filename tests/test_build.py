@@ -11,6 +11,12 @@ spec.loader.exec_module(build)
 
 
 class BuildContractTest(unittest.TestCase):
+    def test_only_public_c_headers_are_exposed(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "Makefile"
+            path.write_text("HEADERS = avutil.h \\\n  frame.h \\\n  hwcontext_videotoolbox.h\nINTERNAL_HEADERS = cpu_internal.h\n", encoding="utf-8")
+            self.assertEqual(build.public_headers(path, "libavutil"), ["avutil.h", "frame.h"])
+
     def test_official_pinned_sources(self):
         self.assertEqual(build.LOCK["sources"]["FFmpeg"]["git"], "https://github.com/FFmpeg/FFmpeg.git")
         self.assertEqual(build.LOCK["sources"]["FFmpegKitNext"]["git"], "https://github.com/arthenica/ffmpeg-kit-next.git")
