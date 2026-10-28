@@ -48,7 +48,7 @@ end
     run("pod", "install")
     run("xcodebuild", "-workspace", "PodsSmoke.xcworkspace", "-scheme", "PodsSmoke",
         "-destination", "generic/platform=iOS", "-configuration", "Release", "CODE_SIGNING_ALLOWED=NO",
-        "SWIFT_ENABLE_EXPLICIT_MODULES=NO", "build")
+        "build")
 
 
 if __name__ == "__main__":

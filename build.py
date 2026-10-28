@@ -111,7 +111,7 @@ def package(upstream):
     }
     (destination / "native-versions.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
     shutil.copytree(upstream / "tools" / "license", destination / "Licenses")
-    shutil.copy(upstream / "LICENSE", destination / "Licenses" / "FFmpegKitNext.LICENSE")
+    shutil.copy(upstream / "LICENSE", destination / "Licenses" / "FFmpegKitNext-LICENSE.txt")
     # Preserve the official package and framework names; only adjust local paths.
     spm = (candidates[0] / "Package.swift").read_text(encoding="utf-8")
     for module in MODULES:
@@ -123,7 +123,7 @@ def package(upstream):
   s.summary = 'Official FFmpegKitNext and FFmpeg Apple binaries'
   s.homepage = 'https://github.com/arthenica/ffmpeg-kit-next'
   s.authors = { 'Arthenica' => 'info@arthenica.com' }
-  s.license = { :type => 'LGPL-3.0', :file => 'Licenses/FFmpegKitNext.LICENSE' }
+  s.license = { :type => 'LGPL-3.0', :file => 'Licenses/FFmpegKitNext-LICENSE.txt' }
   s.source = { :http => 'https://github.com/KleinerSource/ffmpegkit-next-build/releases/download/RELEASE/ffmpegkit-next-ios.zip' }
   s.ios.deployment_target = '16.0'
   s.vendored_frameworks = 'Frameworks/*.xcframework'
