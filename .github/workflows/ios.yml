@@ -15,8 +15,19 @@ jobs:
         with:
           extra_nix_config: |
             experimental-features = nix-command flakes
+      - uses: actions/cache/restore@v4
+        with:
+          path: .work/upstream
+          key: official-ios-${{ runner.arch }}-${{ hashFiles('sources.lock.json') }}-${{ github.run_id }}
+          restore-keys: official-ios-${{ runner.arch }}-${{ hashFiles('sources.lock.json') }}-
       - name: Build official sources
+        id: official-build
         run: python3 build.py
+      - uses: actions/cache/save@v4
+        if: always() && steps.official-build.outcome != 'skipped'
+        with:
+          path: .work/upstream
+          key: official-ios-${{ runner.arch }}-${{ hashFiles('sources.lock.json') }}-${{ github.run_id }}
       - name: Test distribution contracts
         run: python3 -m unittest discover -s tests -v
       - name: Compile and test KSPlayer against the new public modules
