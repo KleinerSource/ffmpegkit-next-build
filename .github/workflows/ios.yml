@@ -1,0 +1,39 @@
+name: Official FFmpegKitNext iOS
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: macos-26
+    timeout-minutes: 240
+    steps:
+      - uses: actions/checkout@v4
+      - uses: cachix/install-nix-action@v31
+        with:
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+      - name: Build official sources
+        run: python3 build.py
+      - name: Test distribution contracts
+        run: python3 -m unittest discover -s tests -v
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: build-diagnostics
+          path: |
+            .work/upstream/build.log
+            .work/upstream/src/ffmpeg/ffbuild/config.log
+            dist/official-build-adaptations.diff
+      - name: Publish once (never overwrite a released version)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag="$(python3 -c 'import json; print(json.load(open("sources.lock.json"))["release"])')"
+          if gh release view "$tag" >/dev/null 2>&1; then
+            echo "Release already exists: $tag; increment the rN suffix for a new build."
+            exit 1
+          fi
+          gh release create "$tag" dist/ffmpegkit-next-ios.zip dist/ffmpegkit-next-ios.zip.sha256 dist/release-manifest.json --target "$GITHUB_SHA" --title "$tag" --notes 'Official FFmpeg n9.0.2 + FFmpegKitNext v9.0.2. iOS arm64 and arm64/x86_64 Simulator. No project FFmpeg patches.'

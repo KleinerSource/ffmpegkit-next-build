@@ -1,0 +1,29 @@
+{
+  "schema": 1,
+  "version": "9.0.2",
+  "release": "ffmpegkit-next-9.0.2-ios-r1",
+  "ios_minimum": "16.0",
+  "sources": {
+    "FFmpegKitNext": {
+      "git": "https://github.com/arthenica/ffmpeg-kit-next.git",
+      "tag": "v9.0.2",
+      "commit": "9f04bf1e3c97def70b98e198cb80a57b43ef5b45"
+    },
+    "FFmpeg": {
+      "git": "https://github.com/FFmpeg/FFmpeg.git",
+      "tag": "n9.0.2",
+      "commit": "946fcce07b6dcd0331c8cc609192aeff5e1924f8"
+    }
+  },
+  "options": [
+    "-x", "--spm", "--speed", "--target=16.0",
+    "--disable-arch-arm64e", "--disable-arch-arm64-mac-catalyst",
+    "--disable-arch-x86-64-mac-catalyst", "--no-ffmpeg-kit-protocols",
+    "--enable-lib-ios-audiotoolbox", "--enable-lib-ios-avfoundation",
+    "--enable-lib-ios-videotoolbox", "--enable-lib-ios-bzip2",
+    "--enable-lib-ios-zlib", "--enable-lib-ios-libiconv",
+    "--enable-lib-dav1d", "--enable-lib-gnutls", "--enable-lib-srt",
+    "--enable-lib-libass", "--enable-lib-freetype", "--enable-lib-fribidi",
+    "--enable-lib-harfbuzz"
+  ]
+}
